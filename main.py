@@ -17,10 +17,11 @@ correspondante.
 les routes et les méthodes HTTP acceptées.
 """
 
-from decorator import fast_api_decorator, function_to_transform
+from decorator import power_function
 from app import app
 import requests
 
 
 if __name__ == "__main__":
-    print(requests.get("http://127.0.0.1:8000/").json())
+    power_function(x=9, a=2)
+    print(requests.get("http://127.0.0.1:8000/power").json())
