@@ -4,10 +4,11 @@ from app import app
 
 def fast_api_decorator(route, methods):
     def decorator(func):
-        def wrapper(x, a):
+        def wrapper(*args, **kwargs):
             print("before func")
-            func(x, a)
+            func(*args, **kwargs)
             print("after func")
+            return func(*args, **kwargs)
 
         # add root and function return to the API
         app.add_api_route(route, wrapper, methods=methods)

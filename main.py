@@ -17,8 +17,10 @@ correspondante.
 les routes et les méthodes HTTP acceptées.
 """
 
+# Use command : "python -m uvicorn main:app --reload" to lauch server and be able to request the "app" API.
+
 from decorator import power_function
-from app import app
+from app import app, custom_app
 import requests
 
 
