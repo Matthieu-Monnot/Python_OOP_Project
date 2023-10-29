@@ -19,11 +19,15 @@ les routes et les méthodes HTTP acceptées.
 
 # Use command : "python -m uvicorn main:app --reload" to lauch server and be able to request the "app" API.
 
-from decorator import power_function
-from app import app, custom_app
+from app import app, my_router, power_function
 import requests
 
 
+def power(x, a):
+    print(requests.get(f"http://127.0.0.1:8000/power_function/{x}/{a}").json())
+
+
 if __name__ == "__main__":
-    power_function(x=9, a=2)
-    print(requests.get("http://127.0.0.1:8000/power").json())
+    power(x="9", a="2")
+    # power_function(x="9", a="2")
+    # print(requests.get("http://127.0.0.1:8000/power_function/10/2").json())
