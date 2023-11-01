@@ -23,6 +23,7 @@ Pour utiliser les 3 fonctions comprisent dans l'API, il suffit d'entrer les poin
    Paramètres :
      -  'x': Nombre (integer)
      -  'a': La puissance (integer)
+   
    Exemple : '/power/?x=2&a=3' retournera le résultat de 2 à la puissance 3
 
 2. Add
@@ -30,6 +31,7 @@ Pour utiliser les 3 fonctions comprisent dans l'API, il suffit d'entrer les poin
    Paramètres :
      -  'x': Nombre (integer)
      -  'a': Nombre (integer)
+   
    Exemple : '/add/?x=2&a=3' retournera la somme de 2 et 3
 
 3. Sous
@@ -38,6 +40,7 @@ Pour utiliser les 3 fonctions comprisent dans l'API, il suffit d'entrer les poin
      -  'x': Nombre à soustraire(integer)
      -  'a': Nombre (integer)
      -  'b': Nombre (integer)
+   
    Exemple : '/sous/?x=10&a=3&b=2' pour soustraire 3 et 2 à 10
 
 
