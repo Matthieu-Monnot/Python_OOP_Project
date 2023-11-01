@@ -19,15 +19,26 @@ les routes et les méthodes HTTP acceptées.
 
 # Use command : "python -m uvicorn main:app --reload" to lauch server and be able to request the "app" API.
 
-from app import app, my_router, power_function
+from app import app, power_function, add_function, sous_function
 import requests
 
 
 def power(x, a):
-    print(requests.get(f"http://127.0.0.1:8000/power_function/{x}/{a}").json())
+    print(requests.get(f"http://127.0.0.1:8000/power/?x={x}&a={a}").json())
+
+
+def add(x, a):
+    print(requests.get(f"http://127.0.0.1:8000/add/?x={x}&a={a}").json())
+
+
+def sous(x, a, b):
+    print(requests.post(f"http://127.0.0.1:8000/sous/?x={x}&a={a}&b={b}").json())
 
 
 if __name__ == "__main__":
-    power(x="9", a="2")
-    # power_function(x="9", a="2")
-    # print(requests.get("http://127.0.0.1:8000/power_function/10/2").json())
+    power(x=9, a=2)
+    add(x=9, a=2)
+    sous(x=9, a=2, b=1)
+    print(power_function(x="9", a="2"))
+    print(add_function(x="9", a="2"))
+    print(sous_function(x="9", a="2", b="1"))
