@@ -1,22 +1,24 @@
-# Python_OOP_Project
-
-**FastApiDecoratorBuilder**
+# FastApiDecoratorBuilder
 
 "FastApiDecoratorBuilder" est un algorithme permettant de concevoir un décorateur Python qui transforme une fonction Python en une API FastAPI. 
 
-**Installation** 
+## Installation
 
 1. Télécharger les fichiers Python
 2. Installer l'application FastAPI
-  pip install fastapi
+   $ pip install fastapi
 3. Installer le serveur ASGI
-  pip install "uvicorn[standard]"
+   $ pip install "uvicorn[standard]"
 4. Lancer le serveur dans le terminal de l'application Python 
-  python -m uvicorn main:app --reload
+   $ python -m uvicorn main:app --reload
 5. Le serveur API démarrera et sera accessible à http://127.0.0.1:8000.
 
-**Utilisation** 
-Pour utiliser les 3 fonctions comprisent dans l'API, il suffit d'entrer les points de terminaison suivants après le lien http://127.0.0.1:8000
+## Utilisation
+Le décorateur 'Fast_api_decorator' ajoute une route avec un endpoint correspondant aux paramètres de la requête (paramètres de la fonction). Le décorateur appliqué à une fonction puis "lancée" sur le même script de l'instance FastAPI (app) permet de requêter l'API avec une route qui dépend de la fonction et de ses paramètres. 
+L'API est configurée directement grâce aux paramètres du décorateur avec les routes ("/power/", "/Add/" et "/Sous/") et les méthode HTTP ("GET" et "Post").
+
+## Test
+Dans le code suivant, il y a trois fonctions qui ont été implémenté dans l'API. Il suffit d'entrer les points de terminaison suivants après le lien 'http://127.0.0.1:8000'.
 
 1. Power
    Description : Calcul de la puissance d'un nombre
