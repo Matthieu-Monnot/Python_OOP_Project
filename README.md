@@ -14,8 +14,8 @@
 5. Le serveur API démarrera et sera accessible à http://127.0.0.1:8000.
 
 ## Utilisation
-Le décorateur 'Fast_api_decorator' ajoute une route avec un endpoint correspondant aux paramètres de la requête (paramètres de la fonction). Le décorateur appliqué à une fonction puis "lancée" sur le même script de l'instance FastAPI (app) permet de requêter l'API avec une route qui dépend de la fonction et de ses paramètres. 
-L'API est configurée directement grâce aux paramètres du décorateur avec les routes ("/power/", "/Add/" et "/Sous/") et les méthode HTTP ("GET" et "Post").
+Le décorateur 'fast_api_decorator' ajoute une route avec un endpoint correspondant aux paramètres de la requête (paramètres de la fonction). Le décorateur appliqué à une fonction puis "lancée" sur le même script de l'instance FastAPI (app) permet de requêter l'API avec une route qui dépend de la fonction et de ses propres paramètres. 
+L'API est configurée directement grâce aux paramètres du décorateur avec les routes ("/power/", "/add/" et "/sous/") et les méthodes HTTP ("GET", "POST", "PUT", "DELETE").
 
 ## Test
 Dans le code suivant, il y a trois fonctions qui ont été implémenté dans l'API. Il suffit d'entrer les points de terminaison suivants après le lien 'http://127.0.0.1:8000'.
