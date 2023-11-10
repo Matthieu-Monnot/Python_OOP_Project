@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter
 
+
 my_router = APIRouter()
 app = FastAPI()
 
@@ -24,12 +25,45 @@ def add_function(x: str, a: str):
     return {f"{x} + {a} equals": int(x) + int(a)}
 
 
-@fast_api_decorator(route="/sous/", method=["POST"])
-def sous_function(x: str, a: str, b: str):
-    return {f"{x} - {a} - {b} equals": int(x) - int(a) - int(b)}
+@fast_api_decorator(route="/sous/", method=["GET"])
+def sous_function(x: str, lst):
+    return {f"{x} - {lst[0]} - {lst[1]} equals": int(x) - int(lst[0]) - int(lst[1])}
 
 
 # On "lance" les fonctions pour qu'elles soient lisibles par l'app FastAPI
 power_function(x="0", a="0")
 add_function(x="0", a="0")
-sous_function(x="0", a="0", b="0")
+sous_function(x="0", lst=[0, 0])
+
+# résolution pb de lancement des fonctions
+"""
+from fastapi import FastAPI, APIRouter
+
+app = FastAPI()
+
+class PowerEndpoint:
+    router = APIRouter()
+
+    @router.get("/power/")
+    async def power_function(self, x: str, a: str):
+        return {f"{x} to the power of {a}": int(x)**int(a)}
+
+class AddEndpoint:
+    router = APIRouter()
+
+    @router.get("/add/")
+    async def add_function(self, x: str, a: str):
+        return {f"{x} + {a} equals": int(x) + int(a)}
+
+class SousEndpoint:
+    router = APIRouter()
+
+    @router.get("/sous/")
+    async def sous_function(self, x: str, lst):
+        return {f"{x} - {lst[0]} - {lst[1]} equals": int(x) - int(lst[0]) - int(lst[1])}
+
+# Including the routers directly in the main app
+app.include_router(PowerEndpoint.router, tags=["power"])
+app.include_router(AddEndpoint.router, tags=["add"])
+app.include_router(SousEndpoint.router, tags=["sous"])
+"""
