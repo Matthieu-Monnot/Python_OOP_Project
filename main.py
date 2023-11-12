@@ -41,4 +41,4 @@ if __name__ == "__main__":
     sous(x=9, a=2, b=1)
     print(power_function(x="9", a="2"))
     print(add_function(x="9", a="2"))
-    print(sous_function(x="9", a="2", b="1"))
+    print(sous_function(x="9", lst = "[2, 1]"))
