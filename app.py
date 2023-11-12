@@ -30,6 +30,8 @@ def fast_api_decorator(route, method, type_args):
 
 @fast_api_decorator(route="/power/", method=["GET"], type_args=[int, int])
 def power_function(x: Annotated[int, Query(description="Int we'll compute the power")], a: Annotated[int, Query(description="Power of the calculation")]):
+    global request_count
+    request_count += 1
     return {f"{x} to the power of {a}": x ** a}
 
 
