@@ -5,7 +5,25 @@ from pydantic import BaseModel
 
 my_router = APIRouter()
 app = FastAPI()
-request_count = 0
+
+
+def get_saved_value():
+    try:
+        with open("saved_count.txt", "r") as file:
+            value = int(file.read())
+    except FileNotFoundError:
+        with open("saved_count.txt", 'w') as file:
+            file.write('0')
+            value = 0
+    return value
+
+
+request_count = get_saved_value()
+
+
+def save_value(value):
+    with open("saved_count.txt", "w") as file:
+        file.write(str(value))
 
 
 def fast_api_decorator(route, method, type_args):
@@ -19,6 +37,7 @@ def fast_api_decorator(route, method, type_args):
             # Count the number of request
             global request_count
             request_count += 1
+            save_value(request_count)
 
             # add endpoint to the API
             my_router.add_api_route(path=route, endpoint=func, methods=method)
@@ -30,8 +49,6 @@ def fast_api_decorator(route, method, type_args):
 
 @fast_api_decorator(route="/power/", method=["GET"], type_args=[int, int])
 def power_function(x: Annotated[int, Query(description="Int we'll compute the power")], a: Annotated[int, Query(description="Power of the calculation")]):
-    global request_count
-    request_count += 1
     return {f"{x} to the power of {a}": x ** a}
 
 
@@ -58,7 +75,7 @@ def div_function(x: Annotated[int, Query(description="Int we will divide somethi
 
 @app.get("/stats")
 async def get_stats():
-    global request_count
+    request_count = get_saved_value()
     return {"request_count": request_count}
 
 
