@@ -36,7 +36,6 @@ def sous(x, lst):
     print(requests.get(f"http://127.0.0.1:8000/sous/?x={x}&lst={lst[0]}&lst={lst[1]}").json())
 
 
-
 if __name__ == "__main__":
     power(x=9, a=2)
     add(x=9, a=2)
