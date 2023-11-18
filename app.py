@@ -5,14 +5,64 @@ from fastapi.security import OAuth2PasswordRequestForm
 from Authentification import User, get_current_active_user, fake_users_db, UserInDB, fake_hash_password, \
     get_current_inactive_user
 
-from config import Settings
-@lru_cache
-def get_settings():
-    return Settings()
+
+from settings import Settings
+
 
 my_router = APIRouter()
 app = FastAPI()
 
+
+@lru_cache
+def get_settings():
+    return Settings()
+
+
+@app.get("/info")
+async def info(settings: Annotated[Settings, Depends(get_settings)]):
+    return {
+        "app_name": settings.app_name,
+        "admin_email": settings.admin_email,
+        "items_per_user": settings.items_per_user,
+    }
+
+
+
+
+
+
+# @app.get("/info")
+# async def info():
+#     return {
+#         "app_name": settings.app_name,
+#         "admin_email": settings.admin_email,
+#         "items_per_user": settings.items_per_user,
+#     }
+
+# class Settings(BaseSettings):
+#     DEFAULT_VAR: str = "some default string value"  # default value if env variable does not exist
+#     API_KEY: str = "ma key"
+#     APP_MAX: int = 100  # default value if env variable does not exist
+#
+#     model_config = SettingsConfigDict(env_file=".env")
+
+
+
+#def get_settings():
+#    return Settings()
+
+
+# async def info(settings: Settings = Depends(get_settings)):
+#     return {
+#         "default variable": settings.DEFAULT_VAR,
+#         "api key": settings.API_KEY,
+#         "app max integer": settings.APP_MAX,
+#     }
+#
+# @app.get("/")
+# @app.get("/env")
+# async def root():
+#      return {"settings": settings}
 
 def fast_api_decorator(route, method):
     def decorator(func):
@@ -60,13 +110,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
 
     return {"access_token": user.username, "token_type": "bearer"}
 
-@app.get("/env")
-async def info(settings: Annotated[Settings, Depends(get_settings)]):
-    return {
-        "default variable": settings.DEFAULT_VAR,
-        "api key": settings.API_KEY,
-        "app max integer": settings.APP_MAX,
-    }
+
 
 
 # On "lance" les fonctions pour qu'elles soient visibles par l'app FastAPI
@@ -75,6 +119,7 @@ rendement(x="0", r="0")
 power_function(x="0", a="0")
 add_function(x="0", a="0")
 sous_function(x="0", lst=[0, 0])
+
 
 # résolution pb de lancement des fonctions
 """
