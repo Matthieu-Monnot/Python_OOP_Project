@@ -37,16 +37,6 @@ def save_value(value):
         file.write(str(value))
 
 
-# def fast_api_decorator(route, method):
-#     def decorator(func):
-#         def wrapper(*args, **kwargs):
-#             #if current_user in kwargs.values():
-#             my_router.add_api_route(path=route, endpoint=func, methods=method)
-#             app.include_router(my_router)
-#             return func(*args, **kwargs)
-#         return wrapper
-#     return decorator
-
 def fast_api_decorator(route, method, type_args):
     def decorator(func):
         def wrapper(**kwargs):
