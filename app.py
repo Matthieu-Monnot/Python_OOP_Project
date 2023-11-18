@@ -1,7 +1,8 @@
-from fastapi import FastAPI, APIRouter, Query
+from fastapi import FastAPI, APIRouter, Query, Request
 from typing import Annotated
 from pydantic import BaseModel
-
+import pickle
+from collections import Counter
 
 my_router = APIRouter()
 app = FastAPI()
@@ -9,21 +10,32 @@ app = FastAPI()
 
 def get_saved_value():
     try:
-        with open("saved_count.txt", "r") as file:
-            value = int(file.read())
+        with open("saved_count.pkl", "rb") as file:
+            values = pickle.load(file)
     except FileNotFoundError:
-        with open("saved_count.txt", 'w') as file:
-            file.write('0')
-            value = 0
-    return value
+        with open("saved_count.pkl", 'wb') as file:
+            values = {"power_function": 0, "add_function": 0, "sous_function": 0, "div_function": 0}
+            pickle.dump(values, file)
+    return values
 
 
 request_count = get_saved_value()
 
 
-def save_value(value):
-    with open("saved_count.txt", "w") as file:
-        file.write(str(value))
+def save_value(values):
+    with open("saved_count.pkl", "wb") as file:
+        pickle.dump(values, file)
+
+
+route_request_counter = Counter()
+
+
+@app.middleware("http")
+async def count_requests(request: Request, call_next):
+    route = request.url.path
+    route_request_counter[route] += 1
+    response = await call_next(request)
+    return response
 
 
 def fast_api_decorator(route, method, type_args):
@@ -35,8 +47,8 @@ def fast_api_decorator(route, method, type_args):
                     raise TypeError(f"Type d'argument incorrect. Attendu : {expected_type.__name__}, Reçu : {type(value).__name__}")
 
             # Count the number of request
-            global request_count
-            request_count += 1
+            request_count = get_saved_value()
+            request_count[func.__name__] += 1
             save_value(request_count)
 
             # add endpoint to the API
@@ -75,8 +87,8 @@ def div_function(x: Annotated[int, Query(description="Int we will divide somethi
 
 @app.get("/stats")
 async def get_stats():
-    request_count = get_saved_value()
-    return {"request_count": request_count}
+    return {"Nombre d'appels aux fonctions décorées" : get_saved_value(),
+            "Nombre d'appels totaux des API par route" : route_request_counter}
 
 
 # On "lance" les fonctions pour qu'elles soient lisibles par l'app FastAPI
@@ -85,36 +97,3 @@ add_function(x=0, a=0)
 sous_function(x=0, lst=[0, 0])
 input_item = InputDiv(div=10)
 div_function(x=100, item=input_item)
-
-# résolution pb de lancement des fonctions
-"""
-from fastapi import FastAPI, APIRouter
-
-app = FastAPI()
-
-class PowerEndpoint:
-    router = APIRouter()
-
-    @router.get("/power/")
-    async def power_function(self, x: str, a: str):
-        return {f"{x} to the power of {a}": int(x)**int(a)}
-
-class AddEndpoint:
-    router = APIRouter()
-
-    @router.get("/add/")
-    async def add_function(self, x: str, a: str):
-        return {f"{x} + {a} equals": int(x) + int(a)}
-
-class SousEndpoint:
-    router = APIRouter()
-
-    @router.get("/sous/")
-    async def sous_function(self, x: str, lst):
-        return {f"{x} - {lst[0]} - {lst[1]} equals": int(x) - int(lst[0]) - int(lst[1])}
-
-# Including the routers directly in the main app
-app.include_router(PowerEndpoint.router, tags=["power"])
-app.include_router(AddEndpoint.router, tags=["add"])
-app.include_router(SousEndpoint.router, tags=["sous"])
-"""
