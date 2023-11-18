@@ -18,51 +18,7 @@ def get_settings():
     return Settings()
 
 
-@app.get("/info")
-async def info(settings: Annotated[Settings, Depends(get_settings)]):
-    return {
-        "app_name": settings.app_name,
-        "admin_email": settings.admin_email,
-        "items_per_user": settings.items_per_user,
-    }
 
-
-
-
-
-
-# @app.get("/info")
-# async def info():
-#     return {
-#         "app_name": settings.app_name,
-#         "admin_email": settings.admin_email,
-#         "items_per_user": settings.items_per_user,
-#     }
-
-# class Settings(BaseSettings):
-#     DEFAULT_VAR: str = "some default string value"  # default value if env variable does not exist
-#     API_KEY: str = "ma key"
-#     APP_MAX: int = 100  # default value if env variable does not exist
-#
-#     model_config = SettingsConfigDict(env_file=".env")
-
-
-
-#def get_settings():
-#    return Settings()
-
-
-# async def info(settings: Settings = Depends(get_settings)):
-#     return {
-#         "default variable": settings.DEFAULT_VAR,
-#         "api key": settings.API_KEY,
-#         "app max integer": settings.APP_MAX,
-#     }
-#
-# @app.get("/")
-# @app.get("/env")
-# async def root():
-#      return {"settings": settings}
 
 def fast_api_decorator(route, method):
     def decorator(func):
@@ -111,6 +67,13 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     return {"access_token": user.username, "token_type": "bearer"}
 
 
+@app.get("/info")
+async def info(settings: Annotated[Settings, Depends(get_settings)]):
+    return {
+        "app_name": settings.app_name,
+        "admin_email": settings.admin_email,
+        "items_per_user": settings.items_per_user,
+    }
 
 
 # On "lance" les fonctions pour qu'elles soient visibles par l'app FastAPI
