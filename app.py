@@ -14,6 +14,9 @@ route_time_counter = Counter()
 
 @app.on_event("shutdown")
 def shutdown_event():
+    """
+    Remove the statistics file when the app shutdown
+    """
     try:
         os.remove('saved_count.pkl')
     except Exception as e:
@@ -21,6 +24,10 @@ def shutdown_event():
 
 
 def get_saved_values():
+    """
+    Retrieve the statistics data saved in the file
+    :return: dict with statistics values of all API routes
+    """
     try:
         with open("saved_count.pkl", "rb") as file:
             values = pickle.load(file)
@@ -32,12 +39,22 @@ def get_saved_values():
 
 
 def save_value(values):
+    """
+    Save the current API statistics in a file
+    :param values: dict with statistics values of all API routes
+    """
     with open("saved_count.pkl", "wb") as file:
         pickle.dump(values, file)
 
 
 @app.middleware("http")
 async def count_requests(request: Request, call_next):
+    """
+    Increment the number of request by route and calculate the time while processing
+    :param request: incoming HTTP request
+    :param call_next: function that represents the next middleware or request handler in the processing pipeline
+    :return: response of the API request
+    """
     route = request.url.path
     route_request_counter[route] += 1
     start_time = time.time()
@@ -48,12 +65,21 @@ async def count_requests(request: Request, call_next):
 
 
 def check_args_type(dict_args, type_args):
+    """
+    Check if args in the dictionary corresponds to the expected type, raise an error if not
+    :param dict_args: dict of arguments to check
+    :param type_args: list of expected types
+    """
     for value, expected_type in zip(dict_args.values(), type_args):
         if not isinstance(value, expected_type):
             raise TypeError(f"Type d'argument incorrect. Attendu : {expected_type.__name__}, Reçu : {type(value).__name__}")
 
 
 def count_func_call(func):
+    """
+    Increment the number of call by fonction
+    :param func: methode to increment the count
+    """
     request_count = get_saved_values()
     key_func = func.__name__
     if key_func in request_count:
