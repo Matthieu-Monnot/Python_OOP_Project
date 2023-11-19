@@ -82,7 +82,9 @@ def check_args_type(dict_args, type_args):
     """
     for value, expected_type in zip(dict_args.values(), type_args):
         if not isinstance(value, expected_type):
-            raise TypeError(f"Type d'argument incorrect. Attendu : {expected_type.__name__}, Reçu : {type(value).__name__}")
+            raise TypeError(
+                f"Type d'argument incorrect. Attendu : {expected_type.__name__}, Reçu : {type(value).__name__}"
+            )
 
 
 @lru_cache
@@ -120,17 +122,23 @@ def fast_api_decorator(route, method, type_args):
 
 
 @fast_api_decorator(route="/power/", method=["GET"], type_args=[int, int])
-def power_function(x: Annotated[int, Query(description="Int we'll compute the power")], a: Annotated[int, Query(description="Power of the calculation")]):
+def power_function(x: Annotated[int, Query(description="Int we'll compute the power")],
+                   a: Annotated[int, Query(description="Power of the calculation")],
+                   current_user: User = Depends(get_current_active_user)):
     return {f"{x} to the power of {a}": x ** a}
 
 
 @fast_api_decorator(route="/add/", method=["GET"], type_args=[int, int])
-def add_function(x: Annotated[int, Query(description="Int we'll add something")], a: Annotated[int, Query(description="Int added")],current_user: User = Depends(get_current_active_user)):
+def add_function(x: Annotated[int, Query(description="Int we'll add something")],
+                 a: Annotated[int, Query(description="Int added")],
+                 current_user: User = Depends(get_current_active_user)):
     return {f"{x} + {a} equals": x + a}
 
 
 @fast_api_decorator(route="/sous/", method=["GET"], type_args=[int, list])
-def sous_function(x: Annotated[int, Query(description="Int we'll substract something")], lst: Annotated[list[int], Query(description="List of 2 int that will be substracted")],current_user: User = Depends(get_current_active_user)):
+def sous_function(x: Annotated[int, Query(description="Int we'll substract something")],
+                  lst: Annotated[list[int], Query(description="List of 2 int that will be substracted")],
+                  current_user: User = Depends(get_current_active_user)):
     return {f"{x} - {lst[0]} - {lst[1]} equals": x - lst[0] - lst[1]}
 
 
@@ -146,7 +154,7 @@ def div_function(x: Annotated[int, Query(description="Int we will divide somethi
 
 
 @app.get("/stats")
-async def get_stats():
+async def get_stats(current_user: User = Depends(get_current_admin_user)):
     avg_time = dict()
     for key in route_request_counter.keys():
         avg_time[key] = route_time_counter[key] * 1000 / route_request_counter[key]
@@ -161,7 +169,9 @@ def read_users_me(current_user: User = Depends(get_current_active_user)):
 
 
 @fast_api_decorator(route="/rendement/", method=["POST"], type_args=[int, float])
-def rendement(x: Annotated[int, Query(description="Int we'll add something")], r: Annotated[float, Query(description="float added")], current_user: User = Depends(get_current_active_user)):
+def rendement(x: Annotated[int, Query(description="Int we'll add something")],
+              r: Annotated[float, Query(description="float added")],
+              current_user: User = Depends(get_current_active_user)):
     return {f"{x} * (1 + {r}) equals": int(x) * (1 + float(r))}
 
 
