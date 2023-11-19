@@ -1,12 +1,34 @@
+import time
+
 from fastapi import FastAPI, APIRouter
-from fastapi_limiter import FastAPILimiter
+from functools import wraps
+# from fastapi_limiter import FastAPILimiter
+# from fastapi_limiter.depends import RateLimiter
 import ast
 
 my_router = APIRouter()
 app = FastAPI()
 
-limiter = FastAPILimiter(key_func=lambda _: "global", storage_uri="memory://")
-limiter.init_app(app)
+# limiter = FastAPILimiter(key_func=lambda _: "global", storage_uri="memory://")
+# limiter.init_app(app)
+
+def rate_limiting(max_calls: int, time_frame: int):
+    def decorator(func):
+        calls = []
+
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            now = time.time()
+            call_in_time_frame = [call for call in calls if call > now - time_frame]
+            if len(call_in_time_frame) >= max_calls:
+                raise print("rate limit exceeded")
+            calls.append(now)
+            return await func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
 
 def fast_api_decorator(route, method, type_args):
     def decorator(func):
@@ -14,26 +36,26 @@ def fast_api_decorator(route, method, type_args):
             # Handle argument type error
             for value, expected_type in zip(kwargs.values(), type_args):
                 if not isinstance(value, expected_type):
-                    raise TypeError(f"Type d'argument incorrect. Attendu : {expected_type.__name__}, Reçu : {type(value).__name__}")
+                    raise TypeError(
+                        f"Type d'argument incorrect. Attendu : {expected_type.__name__}, Reçu : {type(value).__name__}")
 
             # add endpoint to the API
             my_router.add_api_route(path=route, endpoint=func, methods=method)
             app.include_router(my_router)
             return func(**kwargs)
+
         return wrapper
+
     return decorator
 
 
 @fast_api_decorator(route="/power/", method=["GET"], type_args=[str, str])
-@limiter.limit("5/minute")  # Limite à 5 requêtes par minute
-@app.get("/power/")
+@rate_limiting(max_calls=10, time_frame=60)
 def power_function(x: str, a: str):
-    return {f"{x} to the power of {a}": int(x)**int(a)}
+    return {f"{x} to the power of {a}": int(x) ** int(a)}
 
 
 @fast_api_decorator(route="/add/", method=["GET"], type_args=[str, str])
-@limiter.limit("2/minute")  # Limite à 10 requêtes par minute
-@app.get("/add/")
 def add_function(x: str, a: str):
     return {f"{x} + {a} equals": int(x) + int(a)}
 
@@ -41,14 +63,14 @@ def add_function(x: str, a: str):
 @fast_api_decorator(route="/sous/", method=["GET"], type_args=[str, list])
 def sous_function(x, lst):
     x = ast.literal_eval(x)
-    # lst = ast.literal_eval(lst)
+    lst = ast.literal_eval(lst)
     return {f"{x} - {lst[0]} - {lst[1]} equals": x - lst[0] - lst[1]}
 
 
 # On "lance" les fonctions pour qu'elles soient lisibles par l'app FastAPI
-power_function(x="0", a="0")
-add_function(x="0", a="0")
-sous_function(x="0", lst=[0, 0])
+power_function(x="2", a="3")
+# add_function(x="0", a="0")
+# ous_function(x="0", lst=[0, 0])
 
 # résolution pb de lancement des fonctions
 """
