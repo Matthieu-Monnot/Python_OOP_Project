@@ -70,7 +70,7 @@ async def count_requests(request: Request, call_next):
     start_time = time.time()
     response = await call_next(request)
     end_time = time.time()
-    route_time_counter[route] += end_time - start_time
+    route_time_counter[route] += round(end_time - start_time, 6)
     return response
 
 
@@ -163,7 +163,7 @@ async def get_stats(current_user: User = Depends(get_current_admin_user)):
             "Temps moyen d'exécution par route en ms": avg_time}
 
 
-@fast_api_decorator(route="/users/me", method=["GET"], type_args=None)
+@fast_api_decorator(route="/users/me", method=["GET"], type_args=[])
 def read_users_me(current_user: User = Depends(get_current_active_user)):
     return current_user
 
