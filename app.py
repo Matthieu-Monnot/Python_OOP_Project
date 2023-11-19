@@ -22,6 +22,7 @@ app = FastAPI(title=settings1.title,
 def get_settings():
     return Settings()
 
+
 def get_saved_value():
     try:
         with open("saved_count.txt", "r") as file:
@@ -67,23 +68,27 @@ def fast_api_decorator(route, method, type_args):
 def add_function(x: Annotated[int, Query(description="Int we'll add something")], a: Annotated[int, Query(description="Int added")],current_user: User = Depends(get_current_active_user)):
     return {f"{x} + {a} equals": x + a}
 
+
 @fast_api_decorator(route="/sous/", method=["GET"], type_args=[int, list])
 def sous_function(x: Annotated[int, Query(description="Int we'll substract something")], lst: Annotated[list[int], Query(description="List of 2 int that will be substracted")],current_user: User = Depends(get_current_active_user)):
     return {f"{x} - {lst[0]} - {lst[1]} equals": x - lst[0] - lst[1]}
 
 
-
-@fast_api_decorator(route="/users/me", method=["GET"],type_args=None)
+@fast_api_decorator(route="/users/me", method=["GET"], type_args=None)
 def read_users_me(current_user: User = Depends(get_current_active_user)):
-      return current_user
+    return current_user
+
+
 
 @fast_api_decorator(route="/power/", method=["POST"],type_args=[int, int])
 def power_function(x: Annotated[int, Query(description="Int we'll add something")], a: Annotated[int, Query(description="Int added")], current_user: User = Depends(get_current_active_user)):
     return {f"{x} to the power of {a}": int(x)**int(a)}
 
-@fast_api_decorator(route="/rendement/", method=["POST"],type_args=[int, float])
+
+@fast_api_decorator(route="/rendement/", method=["POST"], type_args=[int, float])
 def rendement(x: Annotated[int, Query(description="Int we'll add something")], r: Annotated[float, Query(description="float added")], current_user: User = Depends(get_current_active_user)):
-     return {f"{x} * (1 + {r}) equals": int(x) * (1 + float(r))}
+    return {f"{x} * (1 + {r}) equals": int(x) * (1 + float(r))}
+
 
 @app.post("/token")
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
@@ -132,36 +137,3 @@ add_function(x=0, a=0)
 sous_function(x=0, lst=[0, 0])
 input_item = InputDiv(div=10)
 div_function(x=100, item=input_item)
-
-# résolution pb de lancement des fonctions
-"""
-from fastapi import FastAPI, APIRouter
-
-app = FastAPI()
-
-class PowerEndpoint:
-    router = APIRouter()
-
-    @router.get("/power/")
-    async def power_function(self, x: str, a: str):
-        return {f"{x} to the power of {a}": int(x)**int(a)}
-
-class AddEndpoint:
-    router = APIRouter()
-
-    @router.get("/add/")
-    async def add_function(self, x: str, a: str):
-        return {f"{x} + {a} equals": int(x) + int(a)}
-
-class SousEndpoint:
-    router = APIRouter()
-
-    @router.get("/sous/")
-    async def sous_function(self, x: str, lst):
-        return {f"{x} - {lst[0]} - {lst[1]} equals": int(x) - int(lst[0]) - int(lst[1])}
-
-# Including the routers directly in the main app
-app.include_router(PowerEndpoint.router, tags=["power"])
-app.include_router(AddEndpoint.router, tags=["add"])
-app.include_router(SousEndpoint.router, tags=["sous"])
-"""
