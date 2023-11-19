@@ -1,4 +1,4 @@
-from app import app, power_function, add_function, sous_function, rendement
+from app import app, power_function, add_function, sous_function
 import requests
 
 
@@ -21,4 +21,4 @@ if __name__ == "__main__":
     print(power_function(x=9, a=2))
     print(add_function(x=9, a=2))
     print(sous_function(x=9, lst=[2, 1]))
-    print(rendement(x=0, r=0.0))
+
