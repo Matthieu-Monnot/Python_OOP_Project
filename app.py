@@ -1,10 +1,12 @@
 from fastapi import FastAPI, APIRouter
+from fastapi_limiter import FastAPILimiter
 import ast
-
 
 my_router = APIRouter()
 app = FastAPI()
 
+limiter = FastAPILimiter(key_func=lambda _: "global", storage_uri="memory://")
+limiter.init_app(app)
 
 def fast_api_decorator(route, method, type_args):
     def decorator(func):
@@ -23,11 +25,15 @@ def fast_api_decorator(route, method, type_args):
 
 
 @fast_api_decorator(route="/power/", method=["GET"], type_args=[str, str])
+@limiter.limit("5/minute")  # Limite à 5 requêtes par minute
+@app.get("/power/")
 def power_function(x: str, a: str):
     return {f"{x} to the power of {a}": int(x)**int(a)}
 
 
 @fast_api_decorator(route="/add/", method=["GET"], type_args=[str, str])
+@limiter.limit("2/minute")  # Limite à 10 requêtes par minute
+@app.get("/add/")
 def add_function(x: str, a: str):
     return {f"{x} + {a} equals": int(x) + int(a)}
 
