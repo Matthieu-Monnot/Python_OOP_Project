@@ -2,15 +2,11 @@ import time
 
 from fastapi import FastAPI, APIRouter
 from functools import wraps
-# from fastapi_limiter import FastAPILimiter
-# from fastapi_limiter.depends import RateLimiter
+
 import ast
 
 my_router = APIRouter()
 app = FastAPI()
-
-# limiter = FastAPILimiter(key_func=lambda _: "global", storage_uri="memory://")
-# limiter.init_app(app)
 
 def rate_limiting(max_calls: int, time_frame: int):
     def decorator(func):
