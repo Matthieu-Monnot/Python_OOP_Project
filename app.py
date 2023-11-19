@@ -1,15 +1,9 @@
 import asyncio
-from typing import Annotated
 from functools import lru_cache
-from fastapi import FastAPI, APIRouter, Depends, HTTPException, Query
+from fastapi import FastAPI, APIRouter, Depends, HTTPException, Query,Request
 from fastapi.security import OAuth2PasswordRequestForm
-from Authentification import User, get_current_active_user, fake_users_db, UserInDB, fake_hash_password, \
-    get_current_inactive_user
-from pydantic import BaseModel
-
+from Authentification import User, get_current_active_user, fake_users_db, UserInDB, fake_hash_password, get_current_inactive_user
 from settings import Settings
-
-from fastapi import FastAPI, APIRouter, Query, Request
 from typing import Annotated
 from pydantic import BaseModel
 import pickle
