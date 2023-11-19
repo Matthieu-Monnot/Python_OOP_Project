@@ -1,23 +1,23 @@
-import asyncio
-from functools import lru_cache
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, Query, Request
 from dotenv import load_dotenv
 from fastapi.security import OAuth2PasswordRequestForm
 from settings import Settings
 from typing import Annotated
 from Authentification import User, get_current_active_user, fake_users_db, UserInDB, fake_hash_password, \
-    get_current_admin_user
+    get_current_admin_user, get_current_user
 from pydantic import BaseModel
 import pickle
 from collections import Counter
 import os
 import time
 
+# Load environment variables from a .env file if present
 load_dotenv()
-settings1 = Settings()
+# Create an instance of the Settings class to load environment variables
+sett_Env = Settings()
 
 my_router = APIRouter()
-app = FastAPI(title=settings1.title, description=settings1.description)
+app = FastAPI(title=sett_Env.title, description=sett_Env.description)
 route_request_counter = Counter()
 route_time_counter = Counter()
 
@@ -86,12 +86,6 @@ def check_args_type(dict_args, type_args):
                 f"Type d'argument incorrect. Attendu : {expected_type.__name__}, Reçu : {type(value).__name__}"
             )
 
-
-@lru_cache
-def get_settings():
-    return Settings()
-
-
 def count_func_call(func):
     """
     Increment the number of call by fonction
@@ -125,6 +119,13 @@ def fast_api_decorator(route, method, type_args):
 def power_function(x: Annotated[int, Query(description="Int we'll compute the power")],
                    a: Annotated[int, Query(description="Power of the calculation")],
                    current_user: User = Depends(get_current_active_user)):
+    """
+    Calculates the power of a given number.
+    :param x: The base number
+    :param a: The power to raise the base number to.
+    :param current_user: The current user.
+    :return: The result of the power calculation.
+    """
     return {f"{x} to the power of {a}": x ** a}
 
 
@@ -132,6 +133,13 @@ def power_function(x: Annotated[int, Query(description="Int we'll compute the po
 def add_function(x: Annotated[int, Query(description="Int we'll add something")],
                  a: Annotated[int, Query(description="Int added")],
                  current_user: User = Depends(get_current_active_user)):
+    """
+    Adds two numbers.
+    :param x:The first number.
+    :param a:The second number to add.
+    :param current_user: The current user.
+    :return:The result of the addition.
+    """
     return {f"{x} + {a} equals": x + a}
 
 
@@ -139,6 +147,13 @@ def add_function(x: Annotated[int, Query(description="Int we'll add something")]
 def sous_function(x: Annotated[int, Query(description="Int we'll substract something")],
                   lst: Annotated[list[int], Query(description="List of 2 int that will be substracted")],
                   current_user: User = Depends(get_current_active_user)):
+    """
+    Subtracts two numbers.
+    :param x:The first number.
+    :param lst: The list containing two numbers to subtract from the first.
+    :param current_user: The current user.
+    :return: The result of the subtraction.
+    """
     return {f"{x} - {lst[0]} - {lst[1]} equals": x - lst[0] - lst[1]}
 
 
@@ -149,12 +164,25 @@ class InputDiv(BaseModel):
 # Pour faire une requête avec un argument "Body" ou un json avec des arguments il faut passer
 # par une méthode "POST" et pas "GET"
 @fast_api_decorator(route="/div/", method=["POST"], type_args=[int, InputDiv])
-def div_function(x: Annotated[int, Query(description="Int we will divide something")], item: InputDiv):
+def div_function(x: Annotated[int, Query(description="Int we will divide something")], item: InputDiv,
+                 current_user: User = Depends(get_current_active_user)):
+    """
+    Divides two numbers.
+    :param x: The numerator.
+    :param item: The Pydantic model containing the divisor.
+    :param current_user: The current user.
+    :return: The result of the division.
+    """
     return {f"{x} / {item.div} equals": item.div}
 
 
 @app.get("/stats")
 async def get_stats(current_user: User = Depends(get_current_admin_user)):
+    """
+    Get statistics about API usage.
+    :param current_user: The current admin user.
+    :return: Statistics including the number of API calls per route and average execution time.
+    """
     avg_time = dict()
     for key in route_request_counter.keys():
         avg_time[key] = route_time_counter[key] * 1000 / route_request_counter[key]
@@ -164,19 +192,23 @@ async def get_stats(current_user: User = Depends(get_current_admin_user)):
 
 
 @fast_api_decorator(route="/users/me", method=["GET"], type_args=[])
-def read_users_me(current_user: User = Depends(get_current_active_user)):
+def read_users_me(current_user: User = Depends(get_current_user)):
+    """
+    Get information about the current user.
+    :param current_user: The current user.
+    :return:Information about the current user.
+    """
     return current_user
-
-
-@fast_api_decorator(route="/rendement/", method=["POST"], type_args=[int, float])
-def rendement(x: Annotated[int, Query(description="Int we'll add something")],
-              r: Annotated[float, Query(description="float added")],
-              current_user: User = Depends(get_current_active_user)):
-    return {f"{x} * (1 + {r}) equals": int(x) * (1 + float(r))}
 
 
 @app.post("/token")
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    """
+    Log in and retrieve an access token.
+
+    :param form_data: The OAuth2 password request form containing username and password.
+    :return: The access token and token type.
+    """
     user_dict = fake_users_db.get(form_data.username)
     if not user_dict:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
@@ -187,18 +219,26 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     return {"access_token": user.username, "token_type": "bearer"}
 
 
-@app.get("/info")
+@fast_api_decorator(route="/info/me", method=["GET"], type_args=[])
 async def info():
+    """
+    Get information about the application.
+
+    :return: Information about the application.
+    """
     return {
-        "app_name": settings1.app_name,
-        "admin_email": settings1.admin_email,
-        "items_per_user": settings1.items_per_user,
+        "API_name": sett_Env.title,
+        "API_description": sett_Env.description,
+        "API_url": sett_Env.url,
+        "admin_email": sett_Env.admin_email,
+        "command_to_load": sett_Env.command_load,
+
     }
 
 
 # On "lance" les fonctions pour qu'elles soient visibles par l'app FastAPI
 read_users_me()
-rendement(x=0, r=0.0)
+info()
 power_function(x=0, a=0)
 add_function(x=0, a=0)
 sous_function(x=0, lst=[0, 0])

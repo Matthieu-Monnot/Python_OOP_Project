@@ -1,10 +1,12 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
+# This Pydantic settings class is used to load the configuration parameters from the .env file
 class Settings(BaseSettings):
-    title: str = "FastAPIBuilder"
-    description: str = "default"
-    app_name: str = "Awesome"
-    admin_email: str = "Et"
-    items_per_user: int = 50
-    #model_config = SettingsConfigDict(env_file=".env")
+    title: str = None
+    description: str = None
+    admin_email: str = None
+    command_load:str = None
+    url:str = None
+    save_count_file:str =None
+    hash_password:str =None
+
