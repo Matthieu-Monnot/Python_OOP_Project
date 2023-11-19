@@ -13,6 +13,7 @@ fake_users_db = {
         "email": "johndoe@example.com",
         "hashed_password": "fakehashedsecret",
         "disabled": False,
+        "admin": True,
     },
     "alice": {
         "username": "alice",
@@ -20,6 +21,7 @@ fake_users_db = {
         "email": "alice@example.com",
         "hashed_password": "fakehashedsecret2",
         "disabled": True,
+        "admin": False,
     },
 }
 
@@ -36,6 +38,7 @@ class User(BaseModel):
     email: str  = None
     full_name: str = None
     disabled: bool = None
+    admin: bool = None
 
 
 class UserInDB(User):
@@ -71,8 +74,8 @@ async def get_current_active_user(current_user: Annotated[User, Depends(get_curr
         raise HTTPException(status_code=400, detail="Function not available because you are an Inactive user")
     return current_user
 
-async def get_current_inactive_user(current_user: Annotated[User, Depends(get_current_user)]):
-    if not current_user.disabled:
+async def get_current_admin_user(current_user: Annotated[User, Depends(get_current_user)]):
+    if current_user.disabled:
         raise HTTPException(status_code=400, detail="Function not available because you are an Active user")
     return current_user
 
