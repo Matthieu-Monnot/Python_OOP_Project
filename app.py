@@ -4,10 +4,12 @@ from pydantic import BaseModel
 import pickle
 from collections import Counter
 import os
+import time
 
 my_router = APIRouter()
 app = FastAPI()
 route_request_counter = Counter()
+route_time_counter = Counter()
 
 
 @app.on_event("shutdown")
@@ -38,7 +40,10 @@ def save_value(values):
 async def count_requests(request: Request, call_next):
     route = request.url.path
     route_request_counter[route] += 1
+    start_time = time.time()
     response = await call_next(request)
+    end_time = time.time()
+    route_time_counter[route] += end_time - start_time
     return response
 
 
@@ -101,8 +106,12 @@ def div_function(x: Annotated[int, Query(description="Int we will divide somethi
 
 @app.get("/stats")
 async def get_stats():
+    avg_time = dict()
+    for key in route_request_counter.keys():
+        avg_time[key] = route_time_counter[key] * 1000 / route_request_counter[key]
     return {"Nombre d'appels aux fonctions décorées": get_saved_values(),
-            "Nombre d'appels totaux des API par route": route_request_counter}
+            "Nombre d'appels totaux des API par route": route_request_counter,
+            "Temps moyen d'exécution par route en ms": avg_time}
 
 
 # On "lance" les fonctions pour qu'elles soient lisibles par l'app FastAPI
