@@ -1,17 +1,21 @@
 import asyncio
 from typing import Annotated
 from functools import lru_cache
+from dotenv import load_dotenv
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, Query
 from fastapi.security import OAuth2PasswordRequestForm
 from Authentification import User, get_current_active_user, fake_users_db, UserInDB, fake_hash_password, \
-    get_current_inactive_user
+    get_current_admin_user
 from pydantic import BaseModel
-
 from settings import Settings
 
+load_dotenv()
+settings1 = Settings()
 
 my_router = APIRouter()
-app = FastAPI()
+app = FastAPI(title=settings1.title,
+              description= settings1.description,
+              )
 
 
 @lru_cache
@@ -61,12 +65,12 @@ def fast_api_decorator(route, method, type_args):
 
 
 @fast_api_decorator(route="/add/", method=["GET"], type_args=[int, int])
-def add_function(x: Annotated[int, Query(description="Int we'll add something")], a: Annotated[int, Query(description="Int added")]):
+def add_function(x: Annotated[int, Query(description="Int we'll add something")], a: Annotated[int, Query(description="Int added")],current_user: User = Depends(get_current_active_user)):
     return {f"{x} + {a} equals": x + a}
 
 
 @fast_api_decorator(route="/sous/", method=["GET"], type_args=[int, list])
-def sous_function(x: Annotated[int, Query(description="Int we'll substract something")], lst: Annotated[list[int], Query(description="List of 2 int that will be substracted")]):
+def sous_function(x: Annotated[int, Query(description="Int we'll substract something")], lst: Annotated[list[int], Query(description="List of 2 int that will be substracted")],current_user: User = Depends(get_current_active_user)):
     return {f"{x} - {lst[0]} - {lst[1]} equals": x - lst[0] - lst[1]}
 
 
@@ -75,8 +79,9 @@ def read_users_me(current_user: User = Depends(get_current_active_user)):
     return current_user
 
 
-@fast_api_decorator(route="/power/", method=["POST"], type_args=[int, int])
-def power_function(x: Annotated[int, Query(description="Int we'll add something")], a: Annotated[int, Query(description="Int added")], current_user: User = Depends(get_current_inactive_user)):
+
+@fast_api_decorator(route="/power/", method=["POST"],type_args=[int, int])
+def power_function(x: Annotated[int, Query(description="Int we'll add something")], a: Annotated[int, Query(description="Int added")], current_user: User = Depends(get_current_active_user)):
     return {f"{x} to the power of {a}": int(x)**int(a)}
 
 
@@ -99,11 +104,11 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
 
 
 @app.get("/info")
-async def info(settings: Annotated[Settings, Depends(get_settings)]):
+async def info():
     return {
-        "app_name": settings.app_name,
-        "admin_email": settings.admin_email,
-        "items_per_user": settings.items_per_user,
+        "app_name": settings1.app_name,
+        "admin_email": settings1.admin_email,
+        "items_per_user": settings1.items_per_user,
     }
 
 
@@ -114,12 +119,12 @@ class InputDiv(BaseModel):
 # Pour faire une requête avec un argument "Body" ou un json avec des arguments il faut passer
 # par une méthode "POST" et pas "GET"
 @fast_api_decorator(route="/div/", method=["POST"], type_args=[int, InputDiv])
-def div_function(x: Annotated[int, Query(description="Int we will divide something")], item: InputDiv):
+def div_function(x: Annotated[int, Query(description="Int we will divide something")], item: InputDiv,current_user: User = Depends(get_current_active_user)):
     return {f"{x} / {item.div} equals": item.div}
 
 
 @app.get("/stats")
-async def get_stats():
+async def get_stats(current_user: User = Depends(get_current_admin_user)):
     request_count = get_saved_value()
     return {"request_count": request_count}
 
