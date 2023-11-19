@@ -3,31 +3,35 @@ from typing import Annotated
 from pydantic import BaseModel
 import pickle
 from collections import Counter
+import os
 
 my_router = APIRouter()
 app = FastAPI()
+route_request_counter = Counter()
 
 
-def get_saved_value():
+@app.on_event("shutdown")
+def shutdown_event():
+    try:
+        os.remove('saved_count.pkl')
+    except Exception as e:
+        print(f"Error deleting statistics file: {e}")
+
+
+def get_saved_values():
     try:
         with open("saved_count.pkl", "rb") as file:
             values = pickle.load(file)
     except FileNotFoundError:
-        with open("saved_count.pkl", 'wb') as file:
-            values = {"power_function": 0, "add_function": 0, "sous_function": 0, "div_function": 0}
+        with open('saved_count.pkl', 'wb') as file:
+            values = dict()
             pickle.dump(values, file)
     return values
-
-
-request_count = get_saved_value()
 
 
 def save_value(values):
     with open("saved_count.pkl", "wb") as file:
         pickle.dump(values, file)
-
-
-route_request_counter = Counter()
 
 
 @app.middleware("http")
@@ -38,19 +42,29 @@ async def count_requests(request: Request, call_next):
     return response
 
 
+def check_args_type(dict_args, type_args):
+    for value, expected_type in zip(dict_args.values(), type_args):
+        if not isinstance(value, expected_type):
+            raise TypeError(f"Type d'argument incorrect. Attendu : {expected_type.__name__}, Reçu : {type(value).__name__}")
+
+
+def count_func_call(func):
+    request_count = get_saved_values()
+    key_func = func.__name__
+    if key_func in request_count:
+        request_count[key_func] += 1
+    else:
+        request_count[key_func] = 1
+    save_value(request_count)
+
+
 def fast_api_decorator(route, method, type_args):
     def decorator(func):
         def wrapper(**kwargs):
             # Handle argument type error
-            for value, expected_type in zip(kwargs.values(), type_args):
-                if not isinstance(value, expected_type):
-                    raise TypeError(f"Type d'argument incorrect. Attendu : {expected_type.__name__}, Reçu : {type(value).__name__}")
-
+            check_args_type(dict_args=kwargs, type_args=type_args)
             # Count the number of request
-            request_count = get_saved_value()
-            request_count[func.__name__] += 1
-            save_value(request_count)
-
+            count_func_call(func=func)
             # add endpoint to the API
             my_router.add_api_route(path=route, endpoint=func, methods=method)
             app.include_router(my_router)
@@ -87,8 +101,8 @@ def div_function(x: Annotated[int, Query(description="Int we will divide somethi
 
 @app.get("/stats")
 async def get_stats():
-    return {"Nombre d'appels aux fonctions décorées" : get_saved_value(),
-            "Nombre d'appels totaux des API par route" : route_request_counter}
+    return {"Nombre d'appels aux fonctions décorées": get_saved_values(),
+            "Nombre d'appels totaux des API par route": route_request_counter}
 
 
 # On "lance" les fonctions pour qu'elles soient lisibles par l'app FastAPI
