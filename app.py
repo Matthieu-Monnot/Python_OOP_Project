@@ -10,6 +10,9 @@ import pickle
 from collections import Counter
 import os
 import time
+from datetime import datetime, timedelta
+
+from functools import wraps
 
 # Load environment variables from a .env file if present
 load_dotenv()
@@ -20,6 +23,7 @@ my_router = APIRouter()
 app = FastAPI(title=sett_Env.title, description=sett_Env.description)
 route_request_counter = Counter()
 route_time_counter = Counter()
+rate_limiting = Counter()
 
 
 @app.on_event("shutdown")
@@ -31,7 +35,6 @@ def shutdown_event():
         os.remove('saved_count.pkl')
     except Exception as e:
         print(f"Error deleting statistics file: {e}")
-
 
 def get_saved_values():
     """
@@ -47,7 +50,6 @@ def get_saved_values():
             pickle.dump(values, file)
     return values
 
-
 def save_value(values):
     """
     Save the current API statistics in a file
@@ -55,7 +57,6 @@ def save_value(values):
     """
     with open("saved_count.pkl", "wb") as file:
         pickle.dump(values, file)
-
 
 @app.middleware("http")
 async def count_requests(request: Request, call_next):
@@ -72,7 +73,6 @@ async def count_requests(request: Request, call_next):
     end_time = time.time()
     route_time_counter[route] += round(end_time - start_time, 6)
     return response
-
 
 def check_args_type(dict_args, type_args):
     """
@@ -99,7 +99,6 @@ def count_func_call(func):
         request_count[key_func] = 1
     save_value(request_count)
 
-
 def fast_api_decorator(route, method, type_args):
     def decorator(func):
         def wrapper(**kwargs):
@@ -113,6 +112,26 @@ def fast_api_decorator(route, method, type_args):
             return func(**kwargs)
         return wrapper
     return decorator
+
+# Dictionary to store the last access time for each route
+route_last_access = {}
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    route = request.url.path
+
+    if route not in route_last_access:
+        route_last_access[route] = datetime.utcnow()
+
+    time_difference = datetime.utcnow() - route_last_access[route]
+
+    if time_difference < timedelta(minutes=1):
+        if route_last_access[route] > datetime.utcnow() - timedelta(seconds=5) and route_last_access[route] != datetime.min:
+            raise HTTPException(status_code=400, detail="Rate limit exceeded. Try again later.")
+
+    route_last_access[route] = datetime.utcnow()
+
+    response = await call_next(request)
+    return response
 
 
 @fast_api_decorator(route="/power/", method=["GET"], type_args=[int, int])
@@ -220,7 +239,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
 
 
 @fast_api_decorator(route="/info/me", method=["GET"], type_args=[])
-async def info():
+def info():
     """
     Get information about the application.
 
