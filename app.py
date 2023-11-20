@@ -86,6 +86,7 @@ def check_args_type(dict_args, type_args):
                 f"Type d'argument incorrect. Attendu : {expected_type.__name__}, Reçu : {type(value).__name__}"
             )
 
+
 def count_func_call(func):
     """
     Increment the number of call by fonction
@@ -231,8 +232,7 @@ async def info():
         "API_description": sett_Env.description,
         "API_url": sett_Env.url,
         "admin_email": sett_Env.admin_email,
-        "command_to_load": sett_Env.command_load,
-
+        "command_to_load": sett_Env.command_load
     }
 
 
