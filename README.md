@@ -36,6 +36,7 @@ http://127.0.0.1:8000/docs
 
 ## Utilisation
 1. Le décorateur
+
 Le décorateur '@fast_api_decorator' ajoute une route avec un endpoint correspondant aux paramètres de la requête 
 (paramètres de la fonction). Le décorateur appliqué à une fonction puis exécutée sur le même script de l'instance 
 FastAPI "app" permet de rendre utilisable l'API avec une route qui dépend de la fonction et de ses propres paramètres. 
@@ -54,6 +55,7 @@ Pour finir on note ici que l'API, une fois générée, n'est requêtable uniquem
 avec un utilisateur "actif".
 
 2. L'authentification
+
 Cette API utilise une authentification OAuth2 Password Bearer pour assurer la sécurité des endpoints. Trois types d'utilisateurs sont définis: administrateur (username : "admin" & password : "secret"), utilisateur régulier 
 (username : "bod" & password : "secret1") et utilisateur inactif (username : "alice" & password : "secret2"). 
 L'administrateur a accès à toutes les fonctionnalités proposées par l'API dont les statistiques. 
@@ -64,15 +66,18 @@ sans les permissions nécessaires, l'API renverra une erreur :
    - 400 Bad Request: Vous n'avez pas les permissions nécessaires pour accéder à cette fonctionnalité.
 
 3. Intégration des variables d'environnement
+
 Des variables d'environnement permettent la configuration de notre API. Grâce au fichier .env, on peut personnaliser les paramètres de l'application FastAPI sans avoir à modifier directement le code source. Cela simplifie le déploiement sur différents environnements et une gestion centralisée de la configuration. L'utilisation de pydantic_settings permet de charger ('SettingsConfigDict'), valider (BaseSettings) et utiliser les configurations dans l'API. 
 
 5. Flexibilité des arguments
+
 Les fonctions que le décorateur transforme en API peuvent prendre en entrée n'importe quel type d'argument, autant des types simples comme les string, integer, float que les plus complexes comme les listes, dictionnaire et instance de classe. Les objets complexes nécessitent un traitement particulier lors d'une requête à l'API, le plus souvent comme l'insertion d'un json au sein de la requête. Cette méthode est testable notamment avec notre fonction div qui prend en entrée un objet json contenant un integer. Autre exemple plus simple, les listes, qui elles sont requêtables en ajoutant dans l'URL autant de fois "lst=" si l'argument liste s'appelle "lst" qu'elle ne possède d'objet. 
 Exemple lst=[1, 2, 3, 4] --> "route_api_fonction/?lst=1&lst=2&lst=3&lst=4".
 Enfin, les arguments des fonctions décorées par notre décorateur font l'objet d'un contrôle lors de l'exécution du 
 wrapper afin de vérifier leur cohérence avec les attentes du créateur de la fonction.
 
 6. Suivi des Statistiques
+
 Nous avons mis en place un suivi des statistiques du server lors de son utilisation. Par souci de pertinence des
 données, ces informations sont remises à 0 à chaque arrêt du programme. Les informations telles que le nombre d'appels d'API par route, le temps moyen d'exécution des requêtes ainsi que le nombre d'exécutions des fonctions décorées par le décorateur sont collectées et accessibles à l'API "/stats". Le principe de fonctionnement est relativement simple, un fichier pickle est créé lors du lancement du serveur où on stocke un json avec les différents compteurs de nombre de requêtes ou de temps d'exécution. Une API "GET" est en charge d'ouvrir et de lire les données de ce fichier qui sont donc actualisées en temps réel. Enfin, le fichier est détruit lors de l'arrêt du serveur.
 
