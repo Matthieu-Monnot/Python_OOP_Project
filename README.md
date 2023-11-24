@@ -54,6 +54,12 @@ Dans le code suivant, il y a plusieurs fonctions qui ont été implémenté dans
    Route: '/info/' 
    Accès : Pas d'accès spécifique
 
+4. Rate Limiting
+La fonction rate_limit_middleware agit comme un middleware. Elle prend deux paramètres : request qui représente la 
+requête HTTP entrante et call_next qui est une fonction représentant le prochain middleware ou le gestionnaire de route réel dans le pipeline de traitement.
+Cela nous permet de traiter les requêtes et en locurrence de les limiter afin de ne pas surcharger le server. Nous avons limimé les requêtes à 2 par opérations mathématique en 10 secondes.
+
+
 ### Opérations Mathématiques
 1. Power
    Description : Calcul de la puissance d'un nombre
@@ -121,3 +127,8 @@ FastAPI. En effet, lors du lancement de l'application, le programme app.py est e
 ajoutées tant que le décorateur n'est pas appelé, c'est-à-dire que les fonctions décorées ne sont pas exécutées une
 première fois. Il est alors nécessaire d'appeler chaque fonction dans le programme app afin de rendre utilisable
 leur route.
+
+
+pip install python-multipart
+pip install pydantic-settings
+
