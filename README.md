@@ -36,7 +36,21 @@ http://127.0.0.1:8000
 ```python
 http://127.0.0.1:8000/docs
 ```
+7. Un aperçu des commandes dans le terminal : 
+```python
+# Remplacez "admin" et "secret" par vos identifiants
+response=$(curl -X POST "http://localhost:8000/token" -d "username=admin&password=secret" -H "Content-Type: application/x-www-form-urlencoded")
 
+# Extrait du jeton d'accès de la réponse JSON
+access_token=$(echo $response | jq -r '.access_token')
+```
+Utilisez le jeton d'accès pour accéder à la fonction "stats" ou à la fonction "power"
+```python
+# Stat function 
+curl -X GET "http://localhost:8000/stats" -H "Authorization: Bearer $access_token"
+# Power function
+curl -X GET "http://localhost:8000/power/?x=2&a=3" -H "Authorization: Bearer $access_token"
+```
 
 ## Utilisation
 1. Le décorateur
