@@ -10,6 +10,9 @@ import pickle
 from collections import Counter
 import os
 import time
+from datetime import datetime, timedelta
+from functools import wraps
+
 
 # Load environment variables from a .env file if present
 load_dotenv()
@@ -20,6 +23,10 @@ my_router = APIRouter()
 app = FastAPI(title=sett_Env.title, description=sett_Env.description)
 route_request_counter = Counter()
 route_time_counter = Counter()
+
+rate_limiting = Counter()
+# Dictionary to store the last access time for each route
+route_last_access = {}
 
 
 @app.on_event("shutdown")
@@ -116,6 +123,26 @@ def fast_api_decorator(route, method, type_args):
     return decorator
 
 
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    """
+    Increment the number of request by route and control the rate limit of each API while processing
+    :param request: incoming HTTP request
+    :param call_next: function that represents the next middleware or request handler in the processing pipeline
+    :return: response of the API request
+    """
+    route = request.url.path
+    if route not in route_last_access:
+        route_last_access[route] = datetime.utcnow()
+    time_difference = datetime.utcnow() - route_last_access[route]
+    if time_difference < timedelta(minutes=1):
+        if route_last_access[route] > datetime.utcnow() - timedelta(seconds=10) and route_last_access[route] != datetime.min:
+            raise HTTPException(status_code=400, detail="Rate limit exceeded. Try again later.")
+    route_last_access[route] = datetime.utcnow()
+    response = await call_next(request)
+    return response
+
+
 @fast_api_decorator(route="/power/", method=["GET"], type_args=[int, int])
 def power_function(x: Annotated[int, Query(description="Int we'll compute the power")],
                    a: Annotated[int, Query(description="Power of the calculation")],
@@ -206,7 +233,6 @@ def read_users_me(current_user: User = Depends(get_current_user)):
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     """
     Log in and retrieve an access token.
-
     :param form_data: The OAuth2 password request form containing username and password.
     :return: The access token and token type.
     """
@@ -224,7 +250,6 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
 async def info():
     """
     Get information about the application.
-
     :return: Information about the application.
     """
     return {
@@ -244,4 +269,3 @@ add_function(x=0, a=0)
 sous_function(x=0, lst=[0, 0])
 input_item = InputDiv(div=10)
 div_function(x=100, item=input_item)
-

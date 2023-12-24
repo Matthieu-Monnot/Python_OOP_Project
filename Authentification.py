@@ -41,13 +41,15 @@ def fake_hash_password(password: str):
     """
     return "fakehashed" + password
 
+
 # OAuth2 password bearer scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 
 # Pydantic class to represent the structure of a user
 class User(BaseModel):
     username: str
-    email: str  = None
+    email: str = None
     full_name: str = None
     disabled: bool = None
     admin: bool = None

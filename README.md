@@ -12,9 +12,13 @@ du nombre de requêtes autorisées sur une période donnée pour prévenir la su
 ## Installation
 
 1. Télécharger les fichiers Python
-2. Installer l'application FastAPI 
+2. Installer l'application FastAPI et des packages utilitaires 
 ```python
 $ pip install fastapi
+$ pip install python-multipart
+$ pip install pydantic
+$ pip install pydantic-settings
+$ pip install --upgrade packaging
 ```
 3. Installer le serveur ASGI
 ```python
@@ -67,21 +71,29 @@ sans les permissions nécessaires, l'API renverra une erreur :
 
 3. Intégration des variables d'environnement
 
-Des variables d'environnement permettent la configuration de notre API. Grâce au fichier .env, on peut personnaliser les paramètres de l'application FastAPI sans avoir à modifier directement le code source. Cela simplifie le déploiement sur différents environnements et une gestion centralisée de la configuration. L'utilisation de pydantic_settings permet de charger ('SettingsConfigDict'), valider (BaseSettings) et utiliser les configurations dans l'API. 
+Des variables d'environnement permettent la configuration de notre API. Grâce au fichier .env, on peut personnaliser les 
+paramètres de l'application FastAPI sans avoir à modifier directement le code source. Cela simplifie le déploiement
+sur différents environnements et une gestion centralisée de la configuration. L'utilisation de pydantic_settings 
+permet de charger ('SettingsConfigDict'), valider (BaseSettings) et utiliser les configurations dans l'API. 
 
-5. Flexibilité des arguments
+4. Flexibilité des arguments
 
 Les fonctions que le décorateur transforme en API peuvent prendre en entrée n'importe quel type d'argument, autant des types simples comme les string, integer, float que les plus complexes comme les listes, dictionnaire et instance de classe. Les objets complexes nécessitent un traitement particulier lors d'une requête à l'API, le plus souvent comme l'insertion d'un json au sein de la requête. Cette méthode est testable notamment avec notre fonction div qui prend en entrée un objet json contenant un integer. Autre exemple plus simple, les listes, qui elles sont requêtables en ajoutant dans l'URL autant de fois "lst=" si l'argument liste s'appelle "lst" qu'elle ne possède d'objet. 
 Exemple lst=[1, 2, 3, 4] --> "route_api_fonction/?lst=1&lst=2&lst=3&lst=4".
 Enfin, les arguments des fonctions décorées par notre décorateur font l'objet d'un contrôle lors de l'exécution du 
 wrapper afin de vérifier leur cohérence avec les attentes du créateur de la fonction.
 
-6. Suivi des Statistiques
+5. Suivi des Statistiques
 
 Nous avons mis en place un suivi des statistiques du server lors de son utilisation. Par souci de pertinence des
 données, ces informations sont remises à 0 à chaque arrêt du programme. Les informations telles que le nombre d'appels d'API par route, le temps moyen d'exécution des requêtes ainsi que le nombre d'exécutions des fonctions décorées par le décorateur sont collectées et accessibles à l'API "/stats". Le principe de fonctionnement est relativement simple, un fichier pickle est créé lors du lancement du serveur où on stocke un json avec les différents compteurs de nombre de requêtes ou de temps d'exécution. Une API "GET" est en charge d'ouvrir et de lire les données de ce fichier qui sont donc actualisées en temps réel. Enfin, le fichier est détruit lors de l'arrêt du serveur.
 
-7. Système de rate limiting
+6. Système de rate limiting
+
+La fonction rate_limit_middleware agit comme un middleware. Elle prend deux paramètres : request qui représente la 
+requête HTTP entrante et call_next qui est une fonction représentant le prochain middleware ou le gestionnaire de route
+réel dans le pipeline de traitement. Cela nous permet de traiter les requêtes et en locurrence de les limiter afin 
+de ne pas surcharger le server. Nous avons limimé les requêtes à 2 par opérations mathématique en 10 secondes.
 
 
 ## Fonctionnalités
