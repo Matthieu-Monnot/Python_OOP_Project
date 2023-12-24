@@ -188,4 +188,4 @@ FastAPI. En effet, lors du lancement de l'application, le programme app.py est e
 ajoutées tant que le décorateur n'est pas appelé, c'est-à-dire que les fonctions décorées ne sont pas exécutées une
 première fois. Il est alors nécessaire d'appeler chaque fonction dans le programme app afin de rendre utilisable
 leur route. Ceci a été un point important de réflexion lors de la réalisation de notre projet afin de comprendre en
-détail le fonctionnement d'une API telle q'implémentée.
+détail le fonctionnement d'une API telle qu'implémentée.
