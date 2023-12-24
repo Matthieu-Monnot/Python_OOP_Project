@@ -134,11 +134,10 @@ async def rate_limit_middleware(request: Request, call_next):
     route = request.url.path
     if route not in route_last_access:
         route_last_access[route] = datetime.utcnow()
-    time_difference = datetime.utcnow() - route_last_access[route]
-    if time_difference < timedelta(minutes=1):
-        if route_last_access[route] > datetime.utcnow() - timedelta(seconds=10) and route_last_access[route] != datetime.min:
+    elif datetime.utcnow() - route_last_access[route] < timedelta(minutes=1):
+        if route_last_access[route] > datetime.utcnow() - timedelta(seconds=3) and route_last_access[route] != datetime.min:
             raise HTTPException(status_code=400, detail="Rate limit exceeded. Try again later.")
-    route_last_access[route] = datetime.utcnow()
+        route_last_access[route] = datetime.utcnow()
     response = await call_next(request)
     return response
 
