@@ -47,7 +47,7 @@ FastAPI "app" permet de rendre utilisable l'API avec une route qui dépend de la
 Ainsi, une fois cette étape réalisée, il est possible de requêter l'API de la fonction à laquelle on a appliqué le
 décorateur avec n'importe quels arguments. La réponse de l'API est évidemment l'output de cette fonction. 
 L'API est configurée directement grâce aux paramètres du décorateur avec les routes (ex: "/power/", "/add/" ou "/sous/"), les méthodes HTTP (ex: "GET", "POST", "PUT", "DELETE") et une liste de types correspondant aux types des arguments de la fonction décorée. Prenons l'exemple d'une fonction très simple que nous avons implémenté : la fonction power qui renvoie pour deux nombres de type integer, le premier nombre exposant le second.
-L'objectif donc du décorateur est de rendre accessible une API avec une route unique à cette fonction tous les calculs de puissance possible. Pour ce faire, il suffit d'appliquer le décorateur développer avec une route qui est libre, une certaine méthode HTTP, le type des arguments attendus de la fonction et enfin le type d'authentification des utilisateurs.
+L'objectif donc du décorateur est de rendre accessible une API avec une route unique à cette fonction tous les calculs de puissance possible. Pour ce faire, il suffit d'appliquer le décorateur développé avec une route qui est libre, une certaine méthode HTTP, le type des arguments attendus de la fonction et enfin le type d'authentification des utilisateurs.
 Cela donne ce qui suit :
 ```python
 @fast_api_decorator(route="/power/", method=["GET"], type_args=[int, int])
@@ -92,8 +92,9 @@ données, ces informations sont remises à 0 à chaque arrêt du programme. Les 
 
 La fonction rate_limit_middleware agit comme un middleware. Elle prend deux paramètres : request qui représente la 
 requête HTTP entrante et call_next qui est une fonction représentant le prochain middleware ou le gestionnaire de route
-réel dans le pipeline de traitement. Cela nous permet de traiter les requêtes et en locurrence de les limiter afin 
-de ne pas surcharger le server. Nous avons limimé les requêtes à 2 par opérations mathématique en 10 secondes.
+réel dans le pipeline de traitement. Cela nous permet de traiter les requêtes et en l'ocurrence de les limiter afin 
+de ne pas surcharger le server. Nous avons limimé les requêtes à 2 par opérations mathématique en 3 secondes, ceci est 
+évidement modulable.
 
 
 ## Fonctionnalités
@@ -163,7 +164,7 @@ des authentifications.
    Accès via : Un token d'authentification d'administrateur 
 
 
-## Compte rendu du projet
+## Note supplémentaire
 
 Dans FastAPI, les routes doivent être enregistrées auprès de l'instance d'application pour qu'elles soient 
 accessibles lorsque le serveur est en cours d'exécution. Dans notre code, les routes sont définies à l'aide de 
@@ -172,4 +173,5 @@ les fonctions décorées avec le décorateur @fast_api_decorator, les routes ne 
 FastAPI. En effet, lors du lancement de l'application, le programme app.py est exécuté mais les routes ne sont pas 
 ajoutées tant que le décorateur n'est pas appelé, c'est-à-dire que les fonctions décorées ne sont pas exécutées une
 première fois. Il est alors nécessaire d'appeler chaque fonction dans le programme app afin de rendre utilisable
-leur route.
+leur route. Ceci a été un point important de réflexion lors de la réalisation de notre projet afin de comprendre en
+détail le fonctionnement d'une API telle q'implémentée.
